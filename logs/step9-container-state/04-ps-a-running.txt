@@ -1,0 +1,4 @@
+CONTAINER ID   IMAGE         COMMAND      CREATED          STATUS                      PORTS     NAMES
+81bbf632ed9a   ubuntu        "sleep 20"   15 seconds ago   Up 15 seconds                         ubuntu-state
+fae28394f50f   ubuntu        "bash"       11 minutes ago   Exited (0) 9 minutes ago              ubuntu-lab
+cdbc0486b8a8   hello-world   "/hello"     31 minutes ago   Exited (0) 31 minutes ago             hello-step7

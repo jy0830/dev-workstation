@@ -1,0 +1,6 @@
+CONTAINER ID   IMAGE         COMMAND                   CREATED              STATUS                      PORTS     NAMES
+a36c235bc238   ubuntu        "sleep 300"               About a minute ago   Up About a minute                     ubuntu-monitor
+a127a55f58ed   alpine        "sh -c 'echo step10-…"   2 minutes ago        Exited (0) 2 minutes ago              log-demo
+81bbf632ed9a   ubuntu        "sleep 20"                16 minutes ago       Exited (0) 15 minutes ago             ubuntu-state
+fae28394f50f   ubuntu        "bash"                    27 minutes ago       Exited (0) 25 minutes ago             ubuntu-lab
+cdbc0486b8a8   hello-world   "/hello"                  46 minutes ago       Exited (0) 46 minutes ago             hello-step7

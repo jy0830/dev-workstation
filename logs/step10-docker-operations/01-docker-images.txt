@@ -1,0 +1,3 @@
+REPOSITORY    TAG       IMAGE ID       CREATED        SIZE
+ubuntu        latest    86a1a31fdd84   3 weeks ago    100MB
+hello-world   latest    e2ac70e7319a   4 months ago   10.1kB

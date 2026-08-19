@@ -1,0 +1,5 @@
+REPOSITORY            TAG       IMAGE ID       CREATED              SIZE
+dev-workstation-web   1.0       6440fc437f18   About a minute ago   62.4MB
+ubuntu                latest    86a1a31fdd84   3 weeks ago          100MB
+alpine                latest    d529dd0c6e55   2 months ago         8.42MB
+hello-world           latest    e2ac70e7319a   4 months ago         10.1kB

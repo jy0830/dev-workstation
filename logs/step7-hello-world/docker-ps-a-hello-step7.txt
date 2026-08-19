@@ -1,0 +1,2 @@
+CONTAINER ID   IMAGE         COMMAND    CREATED         STATUS                     PORTS     NAMES
+cdbc0486b8a8   hello-world   "/hello"   3 minutes ago   Exited (0) 3 minutes ago             hello-step7

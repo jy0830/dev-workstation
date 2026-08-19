@@ -1,0 +1,2 @@
+CONTAINER ID   NAME             CPU %     MEM USAGE / LIMIT     MEM %     NET I/O         BLOCK I/O     PIDS
+a36c235bc238   ubuntu-monitor   0.00%     1.871MiB / 15.67GiB   0.01%     1.13kB / 126B   16.4MB / 0B   1
