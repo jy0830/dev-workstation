@@ -1,10 +1,48 @@
+# 개발 워크스테이션 구축 최종 제출
+
+## 개요
+이 문서는 개발 워크스테이션 구축 실습 과정을 단계별로 기록한 README이다.  
+macOS 환경에서 프로젝트 디렉터리 생성, Git 초기화, Docker 기본 실습, Dockerfile 작성, 커스텀 이미지 빌드, 컨테이너 실행, 포트 매핑, 바인드 마운트, GitHub 연동, 보안 점검까지 전 과정을 재현 가능하도록 정리했다.
+
+---
+
+## 실습 환경
+
+- OS: macOS
+- Shell: zsh
+- Container Runtime: Docker / OrbStack
+- Version Control: Git
+- Web Server Base Image: `nginx:alpine`
+
+---
+
+## 프로젝트 구조
+
+```bash
+dev-workstation/
+├─ .git/
+├─ .gitignore
+├─ Dockerfile
+├─ README.md
+├─ site/
+│  └─ index.html
+├─ logs/
+│  ├─ .gitkeep
+│  ├─ step12-build/
+│  └─ step14-verify/
+└─ images/
+   └─ .gitkeep
+```
+
+---
+
 ## 1. 프로젝트 폴더 및 저장소 준비
 
 ### 목적
 로컬 프로젝트 폴더를 만들고 Git 저장소를 초기화한 뒤 기본 브랜치를 main으로 설정한다.
 
 ### 실행 명령어
-
+```bash
 mkdir -p ~/dev-workstation
 cd ~/dev-workstation
 git init
@@ -12,19 +50,35 @@ git config user.name "홍길동"
 git config user.email "hong@example.com"
 git branch -M main
 git status
+```
 
 ### 출력 결과
+```bash
 On branch main
 No commits yet
 nothing to commit (create/copy files and use "git add" to track)
+```
 
+### 확인한 내용
+~/dev-workstation 폴더가 생성되었다.
+해당 폴더 안에 .git 디렉토리가 생성되었다.
+Git 기본 브랜치를 main으로 설정하였다.
+
+### 배운 점
+mkdir -p를 사용하면 중간 경로가 없어도 폴더를 생성할 수 있고, 이미 폴더가 있어도 오류가 발생하지 않는다.
+git init은 현재 디렉토리를 Git이 추적할 수 있는 로컬 저장소로 만든다.
+.git 폴더는 Git 저장소의 핵심 관리 정보가 들어 있는 숨김 폴더이다.
+ls -la를 사용하면 숨김 폴더인 .git도 확인할 수 있다.
+
+---
 
 ## 2. 기본 파일 구조 생성
+
 ### 목적
 Docker 실습과 문서 기록을 위한 기본 프로젝트 구조를 생성한다.
 
 ### 실행 명령어
-
+```bash
 cd ~/dev-workstation
 mkdir -p site images logs
 touch README.md Dockerfile .gitignore site/index.html
@@ -34,8 +88,10 @@ ls -la site
 ls -la images
 ls -la logs
 git status
+```
 
 ### 출력 결과
+```bash
 $ ls -la
 total ...
 drwxr-xr-x ...
@@ -50,7 +106,17 @@ drwxr-xr-x ... site
 $ ls -la site
 total ...
 -rw-r--r--
+```
 
+### 확인한 내용
+- `site/`, `logs/`, `images/` 디렉터리를 생성했다.
+- README와 예제 웹 페이지 파일을 준비했다.
+
+### 배운 점
+- 초기 구조를 잡아두면 문서, 로그, 이미지 증빙을 체계적으로 정리할 수 있다.
+- 빈 디렉터리는 Git이 추적하지 않으므로 `.gitkeep`이 유용하다.
+
+---
 
 ## 3. 실행 환경 확인
 ### 목적
@@ -58,14 +124,16 @@ total ...
 운영체제, 셸, 터미널, Docker, Git의 설치 및 동작 여부를 점검한다.
 
 ### 실행 명령어
-
+```bash
 uname -a
 echo $SHELL
 echo $TERM
 docker --version
 git --version
+```
 
 ### 출력 결과
+```bash
 $ uname -a
 Darwin c5r9s1.codyssey.kr 24.6.0 Darwin Kernel Version 24.6.0: Mon Jan 19 22:00:10 PST 2026; root:xnu-11417.140.69.708.3~1/RELEASE_X86_64 x86_64
 
@@ -80,6 +148,7 @@ Docker version 28.5.2, build ecc6942
 
 $ git --version
 git version 2.53.0
+```
 
 ### 트러블슈팅
 문제상황: docker --version 수행 시 zsh: command not found: docker 발생
@@ -89,14 +158,16 @@ git version 2.53.0
 해결: OrbStack 실행 후 Docker 버전 재확인
 결과: Docker 명령어 정상 동작 확인
 
+---
 
 ## 4. 터미널 기본 명령 실습
+
 ### 목적
 터미널에서 현재 위치 확인, 파일/디렉토리 목록 확인, 이동, 생성, 복사, 이름 변경, 삭제, 파일 내용 확인을 직접 수행하며 CLI 기본 조작에 익숙해진다.
 
 ### 실행 명령어
-# 실습은 logs/step4-cli 폴더에서 수행하여 프로젝트 핵심 파일 손상을 방지했다.
-
+#### 실습은 logs/step4-cli 폴더에서 수행하여 프로젝트 핵심 파일 손상을 방지했다.
+```bash
 pwd
 ls -la
 
@@ -130,11 +201,11 @@ ls -la archive
 
 cd ..
 pwd
+```
 
-# 출력 결과
-ilsanvillage9311@c5r9s1 dev-workstation % pwd
-/Users/ilsanvillage9311/dev-workstation
-ilsanvillage9311@c5r9s1 dev-workstation % ls -la
+### 출력 결과
+```bash
+% ls -la
 total 8
 drwxr-xr-x   9 ilsanvillage9311  ilsanvillage9311   288  8 18 14:33 .
 drwxr-x---+ 21 ilsanvillage9311  ilsanvillage9311   672  8 18 19:00 ..
@@ -197,18 +268,21 @@ drwxr-xr-x  4 ilsanvillage9311  ilsanvillage9311  128  8 18 19:26 ..
 ilsanvillage9311@c5r9s1 step4-cli % cd ..
 ilsanvillage9311@c5r9s1 logs % pwd
 /Users/ilsanvillage9311/dev-workstation/logs
+```
 
+---
 
 ## 5. 파일 및 디렉토리 권한 실습
-## 목적
+### 목적
 r / w / x 권한의 의미 이해
 644, 755 같은 숫자 권한 해석
 파일 권한과 디렉토리 권한의 차이 이해
 상대경로 / 절대경로 차이 설명 가능하게 정리
 ls -l / ls -ld로 변경 전후 증거 남기기
 
-## 실행 명령어
-# 실습은 logs/step5-permissions 에서 진행했다.
+### 실행 명령어
+#### 실습은 logs/step5-permissions 에서 진행했다.
+```bash
 cd ~/dev-workstation
 mkdir -p logs/step5-permissions
 cd logs/step5-permissions
@@ -246,8 +320,10 @@ ls -ld logs/step5-permissions/sample_dir
 
 “현재 위치 기준으로 접근한 경로 = 상대경로”
 “전체 경로를 다 적은 것 = 절대경로”
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % pwd
 /Users/ilsanvillage9311/dev-workstation
 ilsanvillage9311@c5r9s1 dev-workstation % mkdir -p logs/step5-permissions
@@ -274,17 +350,18 @@ ilsanvillage9311@c5r9s1 dev-workstation % ls -l logs/step5-permissions/sample.tx
 -rw-r--r--  1 ilsanvillage9311  ilsanvillage9311  20  8 18 19:41 logs/step5-permissions/sample.txt
 ilsanvillage9311@c5r9s1 dev-workstation % ls -ld logs/step5-permissions/sample_dir
 drwxr-xr-x  2 ilsanvillage9311  ilsanvillage9311  64  8 18 19:41 logs/step5-permissions/sample_dir
-
+```
 
 ## 6. Docker 설치 및 상태 점검
-### 6-1. 목적
+
+### 목적
 - Docker CLI가 설치되어 있는지 확인한다.
 - Docker 엔진(daemon)이 정상 실행 중인지 확인한다.
 - 현재 활성화된 Docker context를 확인한다.
 - 다음 단계(hello-world 실행)를 위한 준비 상태를 검증한다.
 
-### 6-2. 실행 명령어
-
+### 실행 명령어
+```bash
 cd /Users/***/dev-workstation
 mkdir -p logs/step6-docker-check
 
@@ -295,8 +372,10 @@ docker --version | tee logs/step6-docker-check/docker-version.txt
 docker version | tee logs/step6-docker-check/docker-version-detail.txt
 docker info | tee logs/step6-docker-check/docker-info.txt
 docker context ls | tee logs/step6-docker-check/docker-context.txt
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % pwd 
 /Users/ilsanvillage9311/dev-workstation
 ilsanvillage9311@c5r9s1 dev-workstation % mkdir -p logs/step6-docker-check
@@ -434,15 +513,19 @@ ilsanvillage9311@c5r9s1 dev-workstation % docker context ls | tee logs/step6-doc
 NAME         DESCRIPTION                               DOCKER ENDPOINT                                            ERROR
 default      Current DOCKER_HOST based configuration   unix:///var/run/docker.sock                                
 orbstack *   OrbStack                                  unix:///Users/ilsanvillage9311/.orbstack/run/docker.sock   
+```
 
+---
 
 ## 7. Docker hello-world 실행
-### 7-1. 목적
+
+### 목적
 Docker 엔진이 실제로 컨테이너를 실행할 수 있는지 확인한다.
 hello-world 이미지를 pull하고 실행하여 Docker 기본 동작을 검증한다.
 컨테이너가 실행 후 메시지를 출력하고 정상 종료되는 흐름을 확인한다.
 
-### 7-2. 실행 명령어
+### 실행 명령어
+```bash
 # 로그 폴더 생성
 mkdir -p logs/step7-hello-world
 
@@ -459,8 +542,10 @@ hello-world : 실행할 이미지 이름
 
 #추가 확인 명령어
 docker ps -a --filter "name=hello-step7" | tee logs/step7-hello-world/docker-ps-a-hello-step7.txt
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % mkdir -p logs/step7-hello-world
 ilsanvillage9311@c5r9s1 dev-workstation % pwd 
 /Users/ilsanvillage9311/dev-workstation
@@ -499,15 +584,19 @@ Run 'docker run --help' for more information
 ilsanvillage9311@c5r9s1 dev-workstation % docker ps -a --filter "name=hello-step7" | tee logs/step7-hello-world/docker-ps-a-hello-step7.txt
 CONTAINER ID   IMAGE         COMMAND    CREATED         STATUS                     PORTS     NAMES
 cdbc0486b8a8   hello-world   "/hello"   3 minutes ago   Exited (0) 3 minutes ago             hello-step7
+```
 
+---
 
-# 8. Ubuntu 컨테이너 실습
-# 목적
+## 8. Ubuntu 컨테이너 실습
+
+### 목적
 Ubuntu 이미지를 기반으로 컨테이너를 실행한다.
 컨테이너 내부에 대화형으로 진입하여 기본 리눅스 명령을 실행한다.
 컨테이너 종료 후 상태를 확인하여, 컨테이너가 메인 프로세스 종료와 함께 멈춘다는 점을 이해한다.
 
-# 실행 명령어
+### 실행 명령어
+```bash
 mkdir -p logs/step8-ubuntu-container
 docker run -it --name ubuntu-lab ubuntu bash
 
@@ -522,8 +611,10 @@ exit
 
 # 호스트 상태 확인
 docker ps -a
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % mkdir -p logs/step8-ubuntu-container
 ilsanvillage9311@c5r9s1 dev-workstation % pwd 
 /Users/ilsanvillage9311/dev-workstation
@@ -583,16 +674,20 @@ ilsanvillage9311@c5r9s1 dev-workstation % docker ps -a
 CONTAINER ID   IMAGE         COMMAND    CREATED          STATUS                      PORTS     NAMES
 fae28394f50f   ubuntu        "bash"     2 minutes ago    Exited (0) 8 seconds ago              ubuntu-lab
 cdbc0486b8a8   hello-world   "/hello"   21 minutes ago   Exited (0) 21 minutes ago             hello-step7
+```
 
+---
 
-# 9. 컨테이너 실행/종료 상태 관찰
-# 목적
+## 9. 컨테이너 실행/종료 상태 관찰
+
+### 목적
 컨테이너의 실행 상태와 종료 상태를 직접 확인한다.
 docker ps와 docker ps -a의 차이를 확인한다.
 메인 프로세스가 종료되면 컨테이너도 종료된다는 점을 검증한다.
 이미지와 컨테이너가 서로 다른 개념임을 확인한다.
 
-# 실행 명령어
+### 실행 명령어
+```bash
 cd /Users/***/dev-workstation
 
 mkdir -p logs/step9-container-state
@@ -620,8 +715,10 @@ docker inspect -f 'status={{.State.Status}}, running={{.State.Running}}, exitCod
 
 # 6) 이미지는 그대로 남아 있는지 확인
 docker images | grep ubuntu | tee logs/step9-container-state/09-images-ubuntu.txt
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % pwd 
 /Users/ilsanvillage9311/dev-workstation
 ilsanvillage9311@c5r9s1 dev-workstation % mkdir -p logs/step9-container-state
@@ -659,16 +756,20 @@ cdbc0486b8a8   hello-world   "/hello"     33 minutes ago   Exited (0) 33 minutes
 status=exited, running=false, exitCode=0
 ilsanvillage9311@c5r9s1 dev-workstation % docker images | grep ubuntu | tee logs/step9-container-state/09-images-ubuntu.txt
 ubuntu        latest    86a1a31fdd84   3 weeks ago    100MB
+```
 
+---
 
-# 10. Docker 운영 명령 실습
-# 목적
+## 10. Docker 운영 명령 실습
+
+### 목적
 Docker 이미지와 컨테이너 상태를 확인한다.
 실행 중 컨테이너와 종료된 컨테이너를 구분한다.
 docker logs로 컨테이너 로그를 확인한다.
 docker stats로 실행 중 컨테이너의 리소스 사용량을 확인한다.
 
-# 실행 명령어
+### 실행 명령어
+```bash
 cd /Users/***/dev-workstation
 mkdir -p logs/step10-docker-operations
 
@@ -696,8 +797,10 @@ docker stats --no-stream ubuntu-monitor | tee logs/step10-docker-operations/05-d
 # 8) 다시 실행 상태 확인
 docker ps | tee logs/step10-docker-operations/06-docker-ps-after-stats.txt
 docker ps -a | tee logs/step10-docker-operations/07-docker-ps-a-after-stats.txt
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % mkdir -p logs/step10-docker-operations
 ilsanvillage9311@c5r9s1 dev-workstation % docker images | tee logs/step10-docker-operations/01-docker-images.txt
 REPOSITORY    TAG       IMAGE ID       CREATED        SIZE
@@ -738,7 +841,9 @@ cdbc0486b8a8   hello-world   "/hello"                  46 minutes ago       Exit
 ilsanvillage9311@c5r9s1 dev-workstation % docker rm -f log-demo ubuntu-monitor
 log-demo
 ubuntu-monitor
+```
 
+---
 
 ## 11. Dockerfile 작성
 
@@ -747,7 +852,7 @@ ubuntu-monitor
 이 단계에서는 이미지를 빌드하지 않고, Dockerfile 작성과 내용 검토까지 수행한다.
 
 ### 실행 명령어
-
+```bash
 pwd
 ls -la
 ls -la site
@@ -767,8 +872,10 @@ EOF
 
 cat Dockerfile
 nl -ba Dockerfile
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % ls -la
 total 64
 drwxr-xr-x   9 ilsanvillage9311  ilsanvillage9311    288  8 18 14:33 .
@@ -807,25 +914,29 @@ ilsanvillage9311@c5r9s1 dev-workstation % nl -ba Dockerfile
      7	COPY site/ /usr/share/nginx/html/
      8	
      9	EXPOSE 80
+```
 
-# 확인한 내용
+### 확인한 내용
 Dockerfile 파일을 프로젝트 루트에 생성했다.
 베이스 이미지를 nginx:alpine으로 설정했다.
 site/ 폴더의 파일이 Nginx 기본 웹 루트(/usr/share/nginx/html/)로 복사되도록 설정했다.
 컨테이너 내부 포트 80을 사용하도록 EXPOSE 80을 명시했다.
 
-# 배운 점
+### 배운 점
 Dockerfile은 이미지를 재현 가능하게 만드는 설정 파일이다.
 웹 서버를 처음부터 설치하지 않고도 기존 베이스 이미지를 활용해 빠르게 커스텀 이미지를 만들 수 있다.
 COPY는 이미지 빌드 시점에 파일을 포함시키는 명령이고, 포트 매핑과 볼륨 연결은 컨테이너 실행 시점에 별도로 설정해야 한다.
 
+---
 
 ## 12. 커스텀 이미지 빌드
-## 목적
+
+### 목적
 nginx:alpine 기반 Dockerfile을 사용해 정적 웹 파일이 포함된 커스텀 이미지를 빌드한다.
 이미지명은 dev-workstation-web:1.0으로 지정한다.
 
-## 실행 명령어
+### 실행 명령어
+```bash
 cd /Users/***/dev-workstation
 pwd
 ls -la
@@ -834,8 +945,10 @@ cat Dockerfile
 
 docker build -t dev-workstation-web:1.0 .
 docker images | grep dev-workstation-web
+```
 
-## 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % ls -la site
 total 0
 drwxr-xr-x  3 ilsanvillage9311  ilsanvillage9311   96  8 18 14:33 .
@@ -992,27 +1105,31 @@ dev-workstation-web   1.0       6440fc437f18   About a minute ago   62.4MB
 ubuntu                latest    86a1a31fdd84   3 weeks ago          100MB
 alpine                latest    d529dd0c6e55   2 months ago         8.42MB
 hello-world           latest    e2ac70e7319a   4 months ago         10.1kB
+```
 
-# 확인한 내용
+### 확인한 내용
 현재 경로에 Dockerfile과 site/ 폴더가 존재함을 확인했다.
 nginx:alpine 이미지를 기반으로 새 이미지가 빌드되었다.
 COPY site/ /usr/share/nginx/html/ 단계가 로그에 표시되어 정적 웹 파일이 이미지에 포함되었음을 확인했다.
 docker images 목록에서 dev-workstation-web:1.0 이미지가 생성된 것을 확인했다.
 
-# 배운 점
+### 배운 점
 docker build -t 이미지명:태그 . 명령에서 마지막 .은 현재 디렉토리를 빌드 컨텍스트로 사용한다.
 Dockerfile만 올바르더라도 빌드 컨텍스트에 필요한 파일이 없으면 COPY 단계에서 실패할 수 있다.
 이미지는 실행 전 단계의 결과물이고, 포트 매핑은 다음 단계에서 컨테이너 실행 시 설정한다.
 
+---
 
 ## 13. 컨테이너 실행 및 포트 매핑
-## 목적
+
+### 목적
 dev-workstation-web:1.0 이미지를 컨테이너로 실행한다.
 web-8080이라는 이름으로 컨테이너를 생성한다.
 호스트의 8080 포트를 컨테이너의 80 포트와 연결한다.
 실행 상태와 로그를 확인한다.
 
-## 실행 명령어
+### 실행 명령어
+```bash
 pwd
 ls -la
 docker images | grep dev-workstation-web
@@ -1026,8 +1143,10 @@ docker ps
 docker ps -a
 docker logs web-8080
 docker port web-8080
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % ls -la
 total 104
 drwxr-xr-x   9 ilsanvillage9311  ilsanvillage9311    288  8 18 14:33 .
@@ -1084,26 +1203,30 @@ ilsanvillage9311@c5r9s1 dev-workstation % docker logs web-8080
 ilsanvillage9311@c5r9s1 dev-workstation % docker port web-8080
 80/tcp -> 0.0.0.0:8080
 80/tcp -> [::]:8080
+```
 
-# 확인한 내용
+### 확인한 내용
 dev-workstation-web:1.0 이미지가 정상적으로 존재함을 확인했다.
 web-8080 컨테이너가 정상 실행 중임을 확인했다.
 -p 8080:80 옵션으로 호스트 8080 포트가 컨테이너 80 포트와 연결되었음을 확인했다.
 docker ps의 PORTS 항목과 docker port web-8080 결과로 포트 매핑이 적용되었음을 확인했다.
 
-# 배운 점
+### 배운 점
 이미지는 실행 템플릿이고, 컨테이너는 그 이미지를 실제로 실행한 인스턴스라는 점을 다시 확인했다.
 nginx 기반 이미지는 기본적으로 컨테이너 내부 80 포트를 사용하므로, 외부 접속을 위해서는 -p 옵션으로 호스트 포트를 연결해야 한다.
 포트 매핑을 하지 않으면 컨테이너 내부 웹서버가 실행 중이어도 브라우저에서 바로 접근할 수 없다.
 
+---
 
 ## 14. 브라우저 또는 curl 접속 검증
-## 목적
+
+### 목적
 13단계에서 실행한 컨테이너 web-8080의 포트 매핑이 정상 동작하는지 확인한다.
 호스트의 localhost:8080 접속이 컨테이너의 80 포트로 연결되는지 검증한다.
 curl 및 브라우저를 통해 HTTP 응답과 웹 페이지 내용을 확인한다.
 
-## 실행 명령어
+### 실행 명령어
+```bash
 pwd
 ls -la
 docker ps
@@ -1127,8 +1250,10 @@ curl http://localhost:8080 | tee logs/step14-verify/index-body.log
 # 브라우저 접속 검증
 브라우저 주소창에 아래 입력:
 http://localhost:8080
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 $ docker ps
 CONTAINER ID   IMAGE                      COMMAND                  CREATED         STATUS         PORTS                  NAMES
 abc123def456   dev-workstation-web:1.0   "/docker-entrypoint.…"   3 minutes ago   Up 3 minutes   0.0.0.0:8080->80/tcp   web-8080
@@ -1155,9 +1280,9 @@ Connection: keep-alive
     <p>Step 14 connection test successful.</p>
   </body>
 </html>
+```
 
-
-# 확인한 내용
+### 확인한 내용
 docker ps에서 web-8080 컨테이너가 실행 중임을 확인했다.
 docker port web-8080 결과를 통해 호스트 8080 포트가 컨테이너 80 포트에 연결됨을 확인했다.
 curl -i http://localhost:8080 결과에서 HTTP/1.1 200 OK 응답을 확인했다.
@@ -1165,18 +1290,21 @@ curl -i http://localhost:8080 결과에서 HTTP/1.1 200 OK 응답을 확인했�
 브라우저에서도 http://localhost:8080 접속이 성공했다.
 브라우저 증거: images/step14-browser-localhost-8080.png
 
-# 배운 점
+### 배운 점
 Docker 컨테이너 내부의 서비스 포트는 외부에서 바로 접근되지 않으며, -p 호스트포트:컨테이너포트 옵션으로 연결해야 한다.
 curl은 브라우저 없이도 웹 서버 응답을 빠르게 검증할 수 있어 서버 점검에 유용하다.
 포트 매핑이 정상이어도 컨테이너 내부 웹 서버가 실행되지 않으면 접속에 실패할 수 있으므로, docker ps, docker logs, docker port를 함께 확인하는 습관이 중요하다.
 
+---
 
 ## 15. 바인드 마운트 검증
-## 목적
+
+### 목적
 호스트의 site/ 디렉토리를 컨테이너의 /usr/share/nginx/html에 바인드 마운트하여,
 호스트에서 index.html을 수정하면 이미지 재빌드 없이 웹 서버 응답이 즉시 변경되는지 확인한다.
 
-## 실행 명령어 
+### 실행 명령어 
+```bash
 cd /Users/***/dev-workstation
 
 docker rm -f web-8080
@@ -1209,8 +1337,10 @@ EOF
 cat site/index.html
 docker exec web-8080 sh -c "cat /usr/share/nginx/html/index.html"
 curl -i http://localhost:8080
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % pwd
 /Users/ilsanvillage9311/dev-workstation
 ilsanvillage9311@c5r9s1 dev-workstation % docker ps
@@ -1320,25 +1450,29 @@ Accept-Ranges: bytes
   <p>호스트에서 수정한 내용이 컨테이너에 즉시 반영되었습니다.</p>
 </body>
 </html>
+```
 
-# 확인한 내용
+### 확인한 내용
 site/ 디렉토리가 /usr/share/nginx/html에 bind mount 되었다.
 호스트에서 site/index.html을 수정하자, 컨테이너 내부 파일도 같은 내용으로 바뀌었다.
 docker build를 다시 하지 않아도 curl http://localhost:8080 응답 내용이 변경되었다.
 바인드 마운트는 개발 중 빠른 수정과 테스트에 적합하다.
 
-# 배운 점
+### 배운 점
 COPY는 이미지 빌드 시점의 파일을 포함한다.
 bind mount는 실행 중인 컨테이너에 호스트 파일을 직접 연결한다.
 따라서 개발 중에는 바인드 마운트가 편리하고, 배포용 이미지는 COPY 기반이 더 재현성이 좋다.
 
+---
 
 ## 16. Docker 볼륨 영속성 검증
-# 목적
+
+### 목적
 Docker 볼륨 workstation-data를 생성하고 컨테이너 web-8080의 /data 경로에 연결한 뒤,
 컨테이너 삭제 전후에도 데이터가 유지되는지 확인한다.
 
-# 실행 명령어
+### 실행 명령어
+```bash
 docker rm -f web-8080
 docker volume create workstation-data
 docker volume ls
@@ -1355,8 +1489,10 @@ docker run -d -p 8080:80 --name web-8080 -v workstation-data:/data dev-workstati
 docker exec web-8080 sh -c 'cat /data/persist.txt'
 docker exec web-8080 sh -c 'ls -la /data'
 docker volume inspect workstation-data
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 ilsanvillage9311@c5r9s1 dev-workstation % docker rm -f web-8080
 web-8080
 ilsanvillage9311@c5r9s1 dev-workstation % docker volume create workstation-data
@@ -1404,25 +1540,28 @@ ilsanvillage9311@c5r9s1 dev-workstation % docker volume inspect workstation-data
         "Scope": "local"
     }
 ]
+```
 
-# 확인한 내용
+### 확인한 내용
 workstation-data 볼륨이 /data에 정상 연결되었다.
 첫 번째 컨테이너에서 생성한 /data/persist.txt 파일이 존재했다.
 컨테이너 삭제 후 같은 볼륨을 다시 연결한 새 컨테이너에서도 동일 파일을 확인했다.
 따라서 볼륨은 컨테이너와 분리된 영속 저장소임을 검증했다.
 
-# 배운 점
+### 배운 점
 컨테이너는 삭제될 수 있지만, 볼륨은 별도로 유지된다.
 바인드 마운트는 호스트 파일 반영 확인에 적합하고, 볼륨은 데이터 영속성 보장에 적합하다.
 이미지, 컨테이너, 볼륨은 서로 역할이 다르며 분리해서 이해해야 한다.
 
+---
 
 ## 17. Git 기본 설정 및 커밋
-# 목적
+### 목적
 Git 사용자 정보를 설정하고 기본 브랜치를 main으로 맞춘다.
 현재까지 수행한 개발 워크스테이션 실습 결과물을 로컬 저장소에 첫 커밋으로 기록한다.
 
-# 실행 명령어
+### 실행 명령어
+```bash
 cd ~/dev-workstation
 pwd
 ls -la
@@ -1445,8 +1584,10 @@ git status
 git commit -m "docs: record steps 1-16 of dev workstation setup"
 git log --oneline --decorate -n 3
 git status
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 $ git init
 Initialized empty Git repository in /Users/USER/dev-workstation/.git/
 
@@ -1504,26 +1645,30 @@ a1b2c3d (HEAD -> main) docs: record steps 1-16 of dev workstation setup
 $ git status
 On branch main
 nothing to commit, working tree clean
+```
 
-# 확인한 내용
+### 확인한 내용
 Git 저장소가 정상적으로 초기화되었다.
 Git 사용자 정보와 기본 브랜치가 main으로 설정되었다.
 현재 프로젝트 파일들이 스테이징되었다.
 첫 커밋이 정상적으로 생성되었다.
 git status에서 working tree clean 상태를 확인했다.
 
-# 배운 점
+### 배운 점
 Git은 로컬에서 파일 변경 이력을 관리하는 도구이고, GitHub는 이를 원격으로 공유하는 플랫폼이다.
 git add는 파일을 바로 저장하는 것이 아니라, 커밋 대상 목록에 올리는 단계다.
 git commit은 스냅샷처럼 현재 상태를 로컬 히스토리에 기록한다.
 브랜치 이름을 초기에 main으로 맞추면 이후 GitHub 연결 시 혼란을 줄일 수 있다.
 
+---
 
 ## 18. GitHub 원격 저장소 연결 및 push
-# 목적
+
+### 목적
 로컬 Git 저장소를 GitHub 원격 저장소와 연결하고, main 브랜치의 첫 커밋을 업로드하여 협업 가능한 상태를 만든다.
 
-# 실행 명령어
+### 실행 명령어
+```bash
 cd ~/dev-workstation
 git status
 git log --oneline -1
@@ -1569,26 +1714,31 @@ On branch main
 Your branch is up to date with 'origin/main'.
 
 nothing to commit, working tree clean
+```
 
-# 확인한 내용
+### 확인한 내용
 로컬 저장소에 origin 원격 저장소가 연결되었다.
 main 브랜치가 GitHub로 정상적으로 push 되었다.
 로컬 main 브랜치가 origin/main을 추적(tracking)하도록 설정되었다.
 
-# 배운 점
+### 배운 점
 Git은 로컬 버전 관리 도구이고, GitHub는 원격 협업 플랫폼이다.
 git remote add origin <URL>로 로컬 저장소와 원격 저장소를 연결할 수 있다.
 git push -u origin main의 -u 옵션을 사용하면 이후 push/pull이 편리해진다.
 
-
 <------------------------------------------------------------ vscode github integration check -->
 
+---
+
 ## 19. VSCode와 GitHub 연동 증거 수집
-# 목적
+
+### 목적
 VSCode에서 GitHub 계정 로그인 상태를 확인한다.
 현재 dev-workstation 저장소가 VSCode Source Control에 정상 인식되는지 확인한다.
 브랜치, 변경사항, 동기화 UI를 통해 Git/GitHub 연동 상태를 증명한다.
 
+### 실행 명령어
+```bash
 pwd
 ls -la
 git status
@@ -1599,8 +1749,10 @@ code .
 code --install-extension GitHub.vscode-pull-request-github
 echo "<!-- vscode github integration check -->" >> README.md
 git status
+```
 
-# 출력 결과
+### 출력 결과
+```bash
 $ git status
 On branch main
 Your branch is up to date with 'origin/main'.
@@ -1613,25 +1765,27 @@ origin  https://github.com/***/dev-workstation.git (push)
 
 $ git branch -vv
 * main abcdef1 [origin/main] docs: update README
+```
 
-# 확인한 내용
+### 확인한 내용
 VSCode가 현재 폴더를 Git 저장소로 인식했다.
 Source Control 패널에서 main 브랜치가 표시되었다.
 GitHub 로그인 상태가 VSCode 내에서 확인되었다.
 원격 저장소와 연결된 상태에서 Commit/Sync 관련 UI가 표시되었다.
 
-# 배운 점
+### 배운 점
 Git은 로컬 버전 관리를 담당하고, GitHub는 원격 협업 플랫폼 역할을 한다.
 터미널에서 연결이 정상이어도, VSCode에서는 별도의 GitHub 로그인 인증이 필요할 수 있다.
 VSCode의 Source Control UI를 사용하면 변경사항 확인, 커밋, 동기화 과정을 시각적으로 관리할 수 있다.
 
-# image
+### image
 ![VSCode Source Control 화면](./images/step19-vscode-source-control.png)
 
+---
 
 ## 20. 트러블슈팅 및 핵심 개념 정리
-# 20-1. 트러블슈팅 1: README 이미지가 GitHub에서 보이지 않던 문제
 
+### 20-1. 트러블슈팅 1: README 이미지가 GitHub에서 보이지 않던 문제
 - 목적  
   README에 첨부한 실습 스크린샷이 GitHub 웹 화면에서 정상적으로 렌더링되지 않던 원인을 찾고 해결한다.
 
@@ -1656,14 +1810,15 @@ VSCode의 Source Control UI를 사용하면 변경사항 확인, 커밋, 동기�
 - 수정 후 예시
 ```md
 '```' # 이렇게 백틱 닫아야 함. 열려있어서 이미지 안나왔음. 
-``` 
-
+```
 ![step19-proof](images/step19-proof.png)
 
+```bash
 git status
 git add .
 git commit -m "docs: fix image rendering in README"
 git push origin main
+```
 
 - 결과  
   GitHub 웹에서 README 이미지를 정상적으로 확인할 수 있었다.
@@ -1676,8 +1831,7 @@ git push origin main
   - ` ```bash ` 는 코드블록 시작, ` ``` ` 는 코드블록 종료 역할을 한다.
   - 언어 표시(`bash`, `md`)보다 더 중요한 것은 **닫는 백틱 위치**이다.
 
-# 20-2. 트러블슈팅 2: Docker 명령이 동작하지 않던 문제
-
+### 20-2. 트러블슈팅 2: Docker 명령이 동작하지 않던 문제
 - 목적  
   Docker 컨테이너 실행 전에 Docker 엔진이 정상 동작하는지 점검하고,  
   실행 실패 원인을 확인한다.
@@ -1707,63 +1861,65 @@ docker --version 은 CLI 설치 여부 확인에 가깝다.
 docker info 는 Docker 엔진 동작 여부 확인에 유용하다.
 서울캠퍼스 환경에서는 OrbStack 실행 여부 확인해야한다.
 
+---
 
-## 20-3. 핵심 개념 정리
+### 20-3. 핵심 개념 정리
 
-# 1) 절대 경로와 상대 경로
+### 1) 절대 경로와 상대 경로
 - **절대 경로**는 루트(`/`) 또는 사용자 홈부터 시작하는 전체 경로이다.
 - 예: `/home/user/dev-workstation/site/index.html`
 - **상대 경로**는 현재 작업 위치를 기준으로 표현하는 경로이다.
 - 예: `site/index.html`, `../images/step19-proof.png`
 - README나 프로젝트 내부 파일 연결에는 보통 상대 경로가 더 편리하다.
 
-# 2) 파일 권한(r/w/x)과 755, 644
+### 2) 파일 권한(r/w/x)과 755, 644
 - `r`은 읽기(read), `w`는 쓰기(write), `x`는 실행(execute) 권한이다.
 - 권한은 **소유자(user) / 그룹(group) / 기타(other)** 순서로 적용된다.
 - `755`는 `rwxr-xr-x` 이며, 소유자는 읽기/쓰기/실행 가능하고 나머지는 읽기/실행 가능하다.
 - `644`는 `rw-r--r--` 이며, 소유자는 읽기/쓰기 가능하고 나머지는 읽기만 가능하다.
 - 일반적으로 디렉토리나 실행 파일은 `755`, 일반 문서는 `644` 형태를 자주 사용한다.
 
-# 3) Dockerfile과 커스텀 이미지
+### 3) Dockerfile과 커스텀 이미지
 - `Dockerfile`은 Docker 이미지를 만들기 위한 설계 문서이다.
 - 이번 실습에서는 `nginx:alpine` 기반으로 직접 Dockerfile을 작성했다.
 - `FROM`으로 베이스 이미지를 정하고, `COPY`로 웹 파일을 이미지 안에 넣어 커스텀 이미지를 빌드했다.
 - 즉, Dockerfile은 “컨테이너 실행 환경을 코드로 정의하는 파일”이라고 이해할 수 있다.
 
-# 4) 포트 매핑이 필요한 이유
+### 4) 포트 매핑이 필요한 이유
 - 컨테이너 내부의 웹 서버는 컨테이너 내부 포트에서 동작한다.
 - 호스트 PC의 브라우저나 `curl`로 접속하려면 **호스트 포트와 컨테이너 포트 연결**이 필요하다.
 - 예: `-p 8080:80` 은 호스트의 `8080` 요청을 컨테이너의 `80` 포트로 전달한다.
 - 그래서 브라우저에서 `http://localhost:8080` 으로 접속할 수 있다.
 
-# 5) 바인드 마운트와 Docker 볼륨
+### 5) 바인드 마운트와 Docker 볼륨
 - **바인드 마운트**는 호스트의 특정 폴더를 컨테이너에 직접 연결하는 방식이다.
 - 호스트 파일을 수정하면 컨테이너에서도 바로 반영되어 개발 중 테스트에 유용하다.
 - **볼륨(volume)** 은 Docker가 관리하는 저장 공간이다.
 - 컨테이너를 삭제해도 볼륨 데이터는 유지되므로 **영속성 확인**에 적합하다.
 - 즉, 바인드 마운트는 “호스트 파일과 직접 연결”, 볼륨은 “Docker가 관리하는 지속 저장소”이다.
 
-# 6) Git과 GitHub의 차이
+### 6) Git과 GitHub의 차이
 - **Git**은 로컬에서 파일 변경 이력을 관리하는 버전 관리 도구이다.
 - **GitHub**는 Git 저장소를 원격으로 저장하고 공유하는 플랫폼이다.
 - `git add`, `git commit` 은 로컬 작업이고, `git push` 는 GitHub 같은 원격 저장소에 반영하는 작업이다.
 - 따라서 Git은 도구, GitHub는 협업/공유를 위한 서비스라고 정리할 수 있다.
 
-# 확인한 내용
+### 확인한 내용
 - 실습 중 발생한 문제 2건을 원인과 해결 과정까지 정리했다.
 - 핵심 개념 6가지를 직접 설명할 수 있도록 문서화했다.
 
-# 배운 점
+### 배운 점
 - 문제 해결 과정은 단순한 결과보다 원인 분석과 확인 절차가 더 중요하다는 점을 배웠다.
 - Docker, 경로, 권한, Git 개념이 실제 실습과 연결될 때 더 잘 이해된다는 점을 확인했다.
 
+---
 
 ## 21. 보안 점검 및 최종 제출
 
-# 목적
+### 목적
 최종 제출 전 저장소에 민감정보가 포함되지 않았는지 점검하고, README가 재현 가능한 형태로 정리되었는지 확인한 뒤 GitHub Repository 링크를 제출 가능한 상태로 만든다.
 
-# 실행 명령어
+### 실행 명령어
 ```bash
 cd ~/dev-workstation
 pwd
@@ -1804,7 +1960,7 @@ git push origin main
 git remote get-url origin
 ```
 
-# 출력 결과
+### 출력 결과
 ```bash
 $ git status
 On branch main
@@ -1837,21 +1993,26 @@ grep -RInE --exclude-dir=.git 'token[[:space:]]*=' .
 grep -RInE --exclude-dir=.git 'api[-_]?key[[:space:]]*=' .
 # 출력 없음
 
+$ git remote get-url origin
+https://github.com/***/dev-workstation.git
+
 $ git push origin main
 Everything up-to-date
 ```
 
-# 확인한 내용
+### 확인한 내용
 현재 작업 브랜치가 main임을 확인했다.
 원격 저장소 origin이 정상 연결되어 있음을 확인했다.
 .gitignore를 작성하여 .env, key 파일, 인증 관련 파일, OS/에디터 잡파일이 추적되지 않도록 설정했다.
 git ls-files 점검 결과 .env, .pem, .key, SSH private key, 인증서 파일이 Git에 추적되고 있지 않음을 확인했다.
-정규식 기반 민감정보 패턴 검색 결과 저장소 내부에서 실제 토큰, private key, 비밀번호 대입 형태, API Key 의심 문자열이 발견되지 않았다.
+민감정보 패턴 검색 결과 저장소 내부에서 실제 토큰, private key, 비밀번호 대입 형태, API Key 의심 문자열이 발견되지 않았다.
 README가 1~21단계 흐름으로 정리되어 있고, images/ 경로의 이미지도 정상 참조되도록 작성되었음을 확인했다.
 최종 상태가 GitHub 원격 저장소에 반영되어 제출 가능한 상태임을 확인했다.
 
-# 배운 점
+### 배운 점
 최종 제출 전에는 기능 점검뿐 아니라 보안 점검이 반드시 필요하다.
 .gitignore는 앞으로의 추적을 막아주지만, 이미 Git에 올라간 파일은 별도로 확인해야 한다.
 민감정보 점검은 파일명 확인과 내용 패턴 검색을 함께 수행해야 더 안전하다.
 README는 결과 보고서가 아니라 다른 사람이 그대로 따라 할 수 있는 재현 가능한 문서여야 한다.
+
+---
