@@ -1417,4 +1417,169 @@ workstation-data 볼륨이 /data에 정상 연결되었다.
 이미지, 컨테이너, 볼륨은 서로 역할이 다르며 분리해서 이해해야 한다.
 
 
-## 
+## 17. Git 기본 설정 및 커밋
+# 목적
+Git 사용자 정보를 설정하고 기본 브랜치를 main으로 맞춘다.
+현재까지 수행한 개발 워크스테이션 실습 결과물을 로컬 저장소에 첫 커밋으로 기록한다.
+
+# 실행 명령어
+cd ~/dev-workstation
+pwd
+ls -la
+
+git init
+git branch -M main
+
+git config --global user.name "MASKED_NAME"
+git config --global user.email "MASKED_EMAIL"
+git config --global init.defaultBranch main
+
+git config --get user.name
+git config --get user.email
+git config --get init.defaultBranch
+
+git status
+git add .
+git status
+
+git commit -m "docs: record steps 1-16 of dev workstation setup"
+git log --oneline --decorate -n 3
+git status
+
+# 출력 결과
+$ git init
+Initialized empty Git repository in /Users/USER/dev-workstation/.git/
+
+$ git branch -M main
+
+$ git config --get user.name
+MASKED_NAME
+
+$ git config --get user.email
+MASKED_EMAIL
+
+$ git config --get init.defaultBranch
+main
+
+$ git status
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+    .gitignore
+    Dockerfile
+    README.md
+    logs/
+    site/
+
+nothing added to commit but untracked files present
+
+$ git add .
+
+$ git status
+On branch main
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+    new file:   .gitignore
+    new file:   Dockerfile
+    new file:   README.md
+    new file:   site/index.html
+
+$ git commit -m "docs: record steps 1-16 of dev workstation setup"
+[main (root-commit) a1b2c3d] docs: record steps 1-16 of dev workstation setup
+ 4 files changed, 150 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 Dockerfile
+ create mode 100644 README.md
+ create mode 100644 site/index.html
+
+$ git log --oneline --decorate -n 3
+a1b2c3d (HEAD -> main) docs: record steps 1-16 of dev workstation setup
+
+$ git status
+On branch main
+nothing to commit, working tree clean
+
+# 확인한 내용
+Git 저장소가 정상적으로 초기화되었다.
+Git 사용자 정보와 기본 브랜치가 main으로 설정되었다.
+현재 프로젝트 파일들이 스테이징되었다.
+첫 커밋이 정상적으로 생성되었다.
+git status에서 working tree clean 상태를 확인했다.
+
+# 배운 점
+Git은 로컬에서 파일 변경 이력을 관리하는 도구이고, GitHub는 이를 원격으로 공유하는 플랫폼이다.
+git add는 파일을 바로 저장하는 것이 아니라, 커밋 대상 목록에 올리는 단계다.
+git commit은 스냅샷처럼 현재 상태를 로컬 히스토리에 기록한다.
+브랜치 이름을 초기에 main으로 맞추면 이후 GitHub 연결 시 혼란을 줄일 수 있다.
+
+
+## 18. GitHub 원격 저장소 연결 및 push
+# 목적
+로컬 Git 저장소를 GitHub 원격 저장소와 연결하고, main 브랜치의 첫 커밋을 업로드하여 협업 가능한 상태를 만든다.
+
+# 실행 명령어
+cd ~/dev-workstation
+git status
+git log --oneline -1
+git branch
+
+git remote add origin https://github.com/<GITHUB_USERNAME>/dev-workstation.git
+git remote -v
+
+git push -u origin main
+
+git branch -vv
+git status
+
+# 출력 결과
+$ git status
+On branch main
+nothing to commit, working tree clean
+
+$ git log --oneline -1
+123abcd Step 17: Git 초기화 및 첫 커밋
+
+$ git branch
+* main
+
+$ git remote -v
+origin  https://github.com/<GITHUB_USERNAME>/dev-workstation.git (fetch)
+origin  https://github.com/<GITHUB_USERNAME>/dev-workstation.git (push)
+
+$ git push -u origin main
+Enumerating objects: 10, done.
+Counting objects: 100% (10/10), done.
+Writing objects: 100% (10/10), done.
+Total 10 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://github.com/<GITHUB_USERNAME>/dev-workstation.git
+ * [new branch]      main -> main
+branch 'main' set up to track 'origin/main'.
+
+$ git branch -vv
+* main 123abcd [origin/main] Step 17: Git 초기화 및 첫 커밋
+
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+
+# 확인한 내용
+로컬 저장소에 origin 원격 저장소가 연결되었다.
+main 브랜치가 GitHub로 정상적으로 push 되었다.
+로컬 main 브랜치가 origin/main을 추적(tracking)하도록 설정되었다.
+
+# 배운 점
+Git은 로컬 버전 관리 도구이고, GitHub는 원격 협업 플랫폼이다.
+git remote add origin <URL>로 로컬 저장소와 원격 저장소를 연결할 수 있다.
+git push -u origin main의 -u 옵션을 사용하면 이후 push/pull이 편리해진다.
+
+
+## 19
+<------------------------------------------------------------ vscode github integration check -->
