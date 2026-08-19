@@ -1655,7 +1655,9 @@ VSCode의 Source Control UI를 사용하면 변경사항 확인, 커밋, 동기�
 
 - 수정 후 예시
 ```md
-``` # 이렇게 백틱 닫아야 함. 열려있어서 이미지 안나왔음.
+'```' # 이렇게 백틱 닫아야 함. 열려있어서 이미지 안나왔음. 
+``` 
+
 ![step19-proof](images/step19-proof.png)
 
 git status
@@ -1755,3 +1757,101 @@ docker info 는 Docker 엔진 동작 여부 확인에 유용하다.
 - 문제 해결 과정은 단순한 결과보다 원인 분석과 확인 절차가 더 중요하다는 점을 배웠다.
 - Docker, 경로, 권한, Git 개념이 실제 실습과 연결될 때 더 잘 이해된다는 점을 확인했다.
 
+
+## 21. 보안 점검 및 최종 제출
+
+# 목적
+최종 제출 전 저장소에 민감정보가 포함되지 않았는지 점검하고, README가 재현 가능한 형태로 정리되었는지 확인한 뒤 GitHub Repository 링크를 제출 가능한 상태로 만든다.
+
+# 실행 명령어
+```bash
+cd ~/dev-workstation
+pwd
+git status
+git branch --show-current
+git remote -v
+git log --oneline -5
+
+cat .gitignore
+
+find . -type f \( \
+-name ".env" -o \
+-name ".env.*" -o \
+-name "*.pem" -o \
+-name "*.key" -o \
+-name "id_rsa" -o \
+-name "id_ed25519" -o \
+-name "*.p12" \
+\) -not -path "./.git/*"
+
+git ls-files | grep -E '(^|/)\.env($|\.)|\.pem$|\.key$|id_rsa$|id_ed25519$|\.p12$'
+
+grep -RIn --exclude-dir=.git 'ghp_' .
+grep -RIn --exclude-dir=.git 'github_pat_' .
+grep -RIn --exclude-dir=.git 'BEGIN PRIVATE KEY' .
+grep -RIn --exclude-dir=.git 'AKIA' .
+grep -RIn --exclude-dir=.git 'AIza' .
+grep -RInE --exclude-dir=.git 'password[[:space:]]*=' .
+grep -RInE --exclude-dir=.git 'token[[:space:]]*=' .
+grep -RInE --exclude-dir=.git 'api[-_]?key[[:space:]]*=' .
+
+grep -n '^#' README.md
+grep -n 'images/' README.md
+
+git add .gitignore README.md
+git commit -m "docs: finalize step 21 security check and submission"
+git push origin main
+git remote get-url origin
+```
+
+# 출력 결과
+```bash
+$ git status
+On branch main
+nothing to commit, working tree clean
+
+$ git branch --show-current
+main
+
+$ git remote -v
+origin  https://github.com/***/***.git (fetch)
+origin  https://github.com/***/***.git (push)
+
+$ git rm --cached .env
+fatal: '.env' 경로명세가 어떤 파일과도 일치하지 않습니다
+
+$ git commit -m "chore: remove sensitive file from tracking"
+[main d4a0edf] chore: remove sensitive file from tracking
+ 1 file changed, 25 insertions(+)
+
+$ git ls-files | grep -E '(^|/)\.env($|\.)|\.pem$|\.key$|id_rsa$|id_ed25519$|\.p12$'
+# 출력 없음
+
+grep -RIn --exclude-dir=.git 'ghp_' .
+grep -RIn --exclude-dir=.git 'github_pat_' .
+grep -RIn --exclude-dir=.git 'BEGIN PRIVATE KEY' .
+grep -RIn --exclude-dir=.git 'AKIA' .
+grep -RIn --exclude-dir=.git 'AIza' .
+grep -RInE --exclude-dir=.git 'password[[:space:]]*=' .
+grep -RInE --exclude-dir=.git 'token[[:space:]]*=' .
+grep -RInE --exclude-dir=.git 'api[-_]?key[[:space:]]*=' .
+# 출력 없음
+
+$ git push origin main
+Everything up-to-date
+```
+
+# 확인한 내용
+현재 작업 브랜치가 main임을 확인했다.
+원격 저장소 origin이 정상 연결되어 있음을 확인했다.
+.gitignore를 작성하여 .env, key 파일, 인증 관련 파일, OS/에디터 잡파일이 추적되지 않도록 설정했다.
+git ls-files 점검 결과 .env, .pem, .key, SSH private key, 인증서 파일이 Git에 추적되고 있지 않음을 확인했다.
+정규식 기반 민감정보 패턴 검색 결과 저장소 내부에서 실제 토큰, private key, 비밀번호 대입 형태, API Key 의심 문자열이 발견되지 않았다.
+README가 1~21단계 흐름으로 정리되어 있고, images/ 경로의 이미지도 정상 참조되도록 작성되었음을 확인했다.
+최종 상태가 GitHub 원격 저장소에 반영되어 제출 가능한 상태임을 확인했다.
+
+# 배운 점
+최종 제출 전에는 기능 점검뿐 아니라 보안 점검이 반드시 필요하다.
+.gitignore는 앞으로의 추적을 막아주지만, 이미 Git에 올라간 파일은 별도로 확인해야 한다.
+민감정보 점검은 파일명 확인과 내용 패턴 검색을 함께 수행해야 더 안전하다.
+README는 결과 보고서가 아니라 다른 사람이 그대로 따라 할 수 있는 재현 가능한 문서여야 한다.
