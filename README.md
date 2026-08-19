@@ -4,7 +4,7 @@
 로컬 프로젝트 폴더를 만들고 Git 저장소를 초기화한 뒤 기본 브랜치를 main으로 설정한다.
 
 ### 실행 명령어
-```bash
+
 mkdir -p ~/dev-workstation
 cd ~/dev-workstation
 git init
@@ -24,7 +24,7 @@ nothing to commit (create/copy files and use "git add" to track)
 Docker 실습과 문서 기록을 위한 기본 프로젝트 구조를 생성한다.
 
 ### 실행 명령어
-```bash
+
 cd ~/dev-workstation
 mkdir -p site images logs
 touch README.md Dockerfile .gitignore site/index.html
@@ -58,7 +58,7 @@ total ...
 운영체제, 셸, 터미널, Docker, Git의 설치 및 동작 여부를 점검한다.
 
 ### 실행 명령어
-```bash
+
 uname -a
 echo $SHELL
 echo $TERM
@@ -96,7 +96,7 @@ git version 2.53.0
 
 ### 실행 명령어
 # 실습은 logs/step4-cli 폴더에서 수행하여 프로젝트 핵심 파일 손상을 방지했다.
-```bash
+
 pwd
 ls -la
 
@@ -284,7 +284,7 @@ drwxr-xr-x  2 ilsanvillage9311  ilsanvillage9311  64  8 18 19:41 logs/step5-perm
 - 다음 단계(hello-world 실행)를 위한 준비 상태를 검증한다.
 
 ### 6-2. 실행 명령어
-```bash
+
 cd /Users/***/dev-workstation
 mkdir -p logs/step6-docker-check
 
@@ -747,7 +747,7 @@ ubuntu-monitor
 이 단계에서는 이미지를 빌드하지 않고, Dockerfile 작성과 내용 검토까지 수행한다.
 
 ### 실행 명령어
-```bash
+
 pwd
 ls -la
 ls -la site
@@ -1581,5 +1581,177 @@ git remote add origin <URL>로 로컬 저장소와 원격 저장소를 연결할
 git push -u origin main의 -u 옵션을 사용하면 이후 push/pull이 편리해진다.
 
 
-## 19
 <------------------------------------------------------------ vscode github integration check -->
+
+## 19. VSCode와 GitHub 연동 증거 수집
+# 목적
+VSCode에서 GitHub 계정 로그인 상태를 확인한다.
+현재 dev-workstation 저장소가 VSCode Source Control에 정상 인식되는지 확인한다.
+브랜치, 변경사항, 동기화 UI를 통해 Git/GitHub 연동 상태를 증명한다.
+
+pwd
+ls -la
+git status
+git remote -v
+git branch -vv
+code .
+
+code --install-extension GitHub.vscode-pull-request-github
+echo "<!-- vscode github integration check -->" >> README.md
+git status
+
+# 출력 결과
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+
+$ git remote -v
+origin  https://github.com/***/dev-workstation.git (fetch)
+origin  https://github.com/***/dev-workstation.git (push)
+
+$ git branch -vv
+* main abcdef1 [origin/main] docs: update README
+
+# 확인한 내용
+VSCode가 현재 폴더를 Git 저장소로 인식했다.
+Source Control 패널에서 main 브랜치가 표시되었다.
+GitHub 로그인 상태가 VSCode 내에서 확인되었다.
+원격 저장소와 연결된 상태에서 Commit/Sync 관련 UI가 표시되었다.
+
+# 배운 점
+Git은 로컬 버전 관리를 담당하고, GitHub는 원격 협업 플랫폼 역할을 한다.
+터미널에서 연결이 정상이어도, VSCode에서는 별도의 GitHub 로그인 인증이 필요할 수 있다.
+VSCode의 Source Control UI를 사용하면 변경사항 확인, 커밋, 동기화 과정을 시각적으로 관리할 수 있다.
+
+# image
+![VSCode Source Control 화면](./images/step19-vscode-source-control.png)
+
+
+## 20. 트러블슈팅 및 핵심 개념 정리
+# 20-1. 트러블슈팅 1: README 이미지가 GitHub에서 보이지 않던 문제
+
+- 목적  
+  README에 첨부한 실습 스크린샷이 GitHub 웹 화면에서 정상적으로 렌더링되지 않던 원인을 찾고 해결한다.
+
+- 문제  
+  `images/` 폴더에 스크린샷 파일을 복사하고 README에 이미지 문법을 작성했지만,  
+  GitHub에서 이미지는 표시되지 않고 마크다운 문법이 코드처럼 보였다.
+
+- 원인 가설  
+  이미지 문법 `![...](...)` 이 코드블록 내부에 들어가 있어서 일반 텍스트처럼 처리되었을 가능성이 있다.
+
+- 확인 방법  
+  README 원문에서 코드블록 시작/종료 백틱 위치를 다시 확인했다.
+
+- 문제 상황 예시
+```bash
+```md
+![step19-proof](images/step19-proof.png)
+
+- 해결 방법  
+  닫는 백틱으로 코드블록을 먼저 종료한 다음, 그 아래 줄에 이미지 문법을 배치했다.
+
+- 수정 후 예시
+```md
+``` # 이렇게 백틱 닫아야 함. 열려있어서 이미지 안나왔음.
+![step19-proof](images/step19-proof.png)
+
+git status
+git add .
+git commit -m "docs: fix image rendering in README"
+git push origin main
+
+- 결과  
+  GitHub 웹에서 README 이미지를 정상적으로 확인할 수 있었다.
+
+- 확인한 내용  
+  마크다운 이미지 문법 자체는 문제가 없었고, 핵심 원인은 **코드블록 종료 위치**였다.
+
+- 배운 점  
+  - 마크다운에서 이미지 문법은 코드블록 밖에 있어야 렌더링된다.
+  - ` ```bash ` 는 코드블록 시작, ` ``` ` 는 코드블록 종료 역할을 한다.
+  - 언어 표시(`bash`, `md`)보다 더 중요한 것은 **닫는 백틱 위치**이다.
+
+# 20-2. 트러블슈팅 2: Docker 명령이 동작하지 않던 문제
+
+- 목적  
+  Docker 컨테이너 실행 전에 Docker 엔진이 정상 동작하는지 점검하고,  
+  실행 실패 원인을 확인한다.
+
+- 문제  
+  Docker 명령 실행 시 컨테이너가 실행되지 않거나 `docker info` 결과가 비정상적이었다.
+
+- 원인 가설  
+  Docker 엔진이 실행 중이지 않거나, 서울캠퍼스 환경에서는 OrbStack이 켜져 있지 않아  
+  Docker daemon 연결에 실패했을 가능성이 있다.
+
+- 확인 방법
+docker --version
+docker info
+
+- 해결 방법
+OrbStack 애플리케이션을 실행한 뒤 다시 docker info 를 확인했다.
+
+- 결과
+Docker 엔진 정보가 정상 출력되었고, 이후 hello-world, ubuntu, nginx:alpine 기반 실습을 계속 진행할 수 있었다.
+
+- 확인한 내용
+Docker CLI가 설치되어 있어도, 실제 컨테이너 실행을 위해서는 Docker 엔진이 실행 중이어야 한다.
+
+- 배운 점
+docker --version 은 CLI 설치 여부 확인에 가깝다.
+docker info 는 Docker 엔진 동작 여부 확인에 유용하다.
+서울캠퍼스 환경에서는 OrbStack 실행 여부 확인해야한다.
+
+
+## 20-3. 핵심 개념 정리
+
+# 1) 절대 경로와 상대 경로
+- **절대 경로**는 루트(`/`) 또는 사용자 홈부터 시작하는 전체 경로이다.
+- 예: `/home/user/dev-workstation/site/index.html`
+- **상대 경로**는 현재 작업 위치를 기준으로 표현하는 경로이다.
+- 예: `site/index.html`, `../images/step19-proof.png`
+- README나 프로젝트 내부 파일 연결에는 보통 상대 경로가 더 편리하다.
+
+# 2) 파일 권한(r/w/x)과 755, 644
+- `r`은 읽기(read), `w`는 쓰기(write), `x`는 실행(execute) 권한이다.
+- 권한은 **소유자(user) / 그룹(group) / 기타(other)** 순서로 적용된다.
+- `755`는 `rwxr-xr-x` 이며, 소유자는 읽기/쓰기/실행 가능하고 나머지는 읽기/실행 가능하다.
+- `644`는 `rw-r--r--` 이며, 소유자는 읽기/쓰기 가능하고 나머지는 읽기만 가능하다.
+- 일반적으로 디렉토리나 실행 파일은 `755`, 일반 문서는 `644` 형태를 자주 사용한다.
+
+# 3) Dockerfile과 커스텀 이미지
+- `Dockerfile`은 Docker 이미지를 만들기 위한 설계 문서이다.
+- 이번 실습에서는 `nginx:alpine` 기반으로 직접 Dockerfile을 작성했다.
+- `FROM`으로 베이스 이미지를 정하고, `COPY`로 웹 파일을 이미지 안에 넣어 커스텀 이미지를 빌드했다.
+- 즉, Dockerfile은 “컨테이너 실행 환경을 코드로 정의하는 파일”이라고 이해할 수 있다.
+
+# 4) 포트 매핑이 필요한 이유
+- 컨테이너 내부의 웹 서버는 컨테이너 내부 포트에서 동작한다.
+- 호스트 PC의 브라우저나 `curl`로 접속하려면 **호스트 포트와 컨테이너 포트 연결**이 필요하다.
+- 예: `-p 8080:80` 은 호스트의 `8080` 요청을 컨테이너의 `80` 포트로 전달한다.
+- 그래서 브라우저에서 `http://localhost:8080` 으로 접속할 수 있다.
+
+# 5) 바인드 마운트와 Docker 볼륨
+- **바인드 마운트**는 호스트의 특정 폴더를 컨테이너에 직접 연결하는 방식이다.
+- 호스트 파일을 수정하면 컨테이너에서도 바로 반영되어 개발 중 테스트에 유용하다.
+- **볼륨(volume)** 은 Docker가 관리하는 저장 공간이다.
+- 컨테이너를 삭제해도 볼륨 데이터는 유지되므로 **영속성 확인**에 적합하다.
+- 즉, 바인드 마운트는 “호스트 파일과 직접 연결”, 볼륨은 “Docker가 관리하는 지속 저장소”이다.
+
+# 6) Git과 GitHub의 차이
+- **Git**은 로컬에서 파일 변경 이력을 관리하는 버전 관리 도구이다.
+- **GitHub**는 Git 저장소를 원격으로 저장하고 공유하는 플랫폼이다.
+- `git add`, `git commit` 은 로컬 작업이고, `git push` 는 GitHub 같은 원격 저장소에 반영하는 작업이다.
+- 따라서 Git은 도구, GitHub는 협업/공유를 위한 서비스라고 정리할 수 있다.
+
+# 확인한 내용
+- 실습 중 발생한 문제 2건을 원인과 해결 과정까지 정리했다.
+- 핵심 개념 6가지를 직접 설명할 수 있도록 문서화했다.
+
+# 배운 점
+- 문제 해결 과정은 단순한 결과보다 원인 분석과 확인 절차가 더 중요하다는 점을 배웠다.
+- Docker, 경로, 권한, Git 개념이 실제 실습과 연결될 때 더 잘 이해된다는 점을 확인했다.
+
